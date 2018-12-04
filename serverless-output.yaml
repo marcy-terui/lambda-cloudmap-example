@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'sam-app
+
+  Sample SAM Template for sam-app
+
+  '
+Globals:
+  Function:
+    Timeout: 3
+Outputs:
+  HelloWorldApi:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
+Resources:
+  ExampleInstance:
+    Properties:
+      InstanceAttributes:
+        env: prod
+      InstanceId:
+        Ref: ExampleStream
+      ServiceId:
+        Ref: ExampleService
+    Type: AWS::ServiceDiscovery::Instance
+  ExampleNameSpace:
+    Properties:
+      Name: sls.willy.works
+    Type: AWS::ServiceDiscovery::HttpNamespace
+  ExampleService:
+    Properties:
+      Name: example-stream
+      NamespaceId:
+        Ref: ExampleNameSpace
+    Type: AWS::ServiceDiscovery::Service
+  ExampleStream:
+    Properties:
+      ShardCount: 1
+    Type: AWS::Kinesis::Stream
+  HelloFunction:
+    Properties:
+      CodeUri: s3://terui-sam-packages/4abba5c12cf3dab715143d6dda2e4526
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Events:
+        HelloWorld:
+          Properties:
+            Method: get
+            Path: /hello
+          Type: Api
+      Handler: app.hello
+      Policies:
+      - AWSCloudMapDiscoverInstanceAccess
+      Runtime: python3.6
+    Type: AWS::Serverless::Function
+  WorldFunction:
+    Properties:
+      CodeUri: s3://terui-sam-packages/4abba5c12cf3dab715143d6dda2e4526
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Events:
+        HelloWorld:
+          Properties:
+            Method: get
+            Path: /world
+          Type: Api
+      Handler: app.world
+      Policies:
+      - AWSCloudMapDiscoverInstanceAccess
+      Runtime: python3.6
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31
